@@ -67,7 +67,7 @@ def load_data(top_num, metrics):
         filtered_rows = data_selected['Product'].apply(lambda x: x in indx)
         bar_data = data_selected.loc[filtered_rows, :].groupby(
             'Industry', dropna=False).nunique().sort_values(
-                by='Customer Key', ascending=False)[['Customer Key']]
+                by='Customer Key')[['Customer Key']]
         line_data = data_selected.loc[filtered_rows, :].groupby(
             ['Year', 'Qtr', 'Month'], dropna=False).nunique()[['Customer Key']]
         state_data = data_selected.loc[filtered_rows, :].groupby(
@@ -84,17 +84,33 @@ source, source_table, source_line, source_bar, source_map = load_data(
 
 # Table
 @st.cache_resource
-def plot_table(_src, top_num):
-	columns = [
-	        bkm.TableColumn(field="Product", title="Product",),
-	        bkm.TableColumn(field="Customer Key", title="Value")]
-	data_table = bkm.DataTable(
-	    source=_src, 
-	    view=bkm.CDSView(filter=bkm.IndexFilter(list(range(top_num)))),
-	    columns=columns, width=300, height=150,
-	    index_position=None)
-	return data_table
-	
-data_table = plot_table(source_table, top_num)
-
+def plot_table(_src, top_num, metrics):
+    if metrics == '# of Customers':
+        plot_metric = 'Customer Key'
+        
+    columns = [
+            bkm.TableColumn(field="Product", title="Product",),
+            bkm.TableColumn(field=plot_metric, title="Value")]
+    data_table = bkm.DataTable(
+        source=_src, 
+        view=bkm.CDSView(filter=bkm.IndexFilter(list(range(top_num)))),
+        columns=columns, width=300, height=150,
+        index_position=None)
+    return data_table
+    
+data_table = plot_table(source_table, top_num, metrics)
 st.bokeh_chart(data_table)
+
+@st.cache_resource
+def plot_bar(_src, metrics):
+    if metrics == '# of Customers':
+        plot_metric = 'Customer Key'
+        
+    fig = bkp.figure(y_range=_src.data['Industry'])
+    fig.hbar(y='Industry', right=plot_metric, 
+             line_color='white',
+             source=_src)
+    return fig
+
+plot_bar = plot_bar(source_bar, metrics)
+st.bokeh_chart(plot_bar)
