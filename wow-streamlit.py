@@ -35,11 +35,9 @@ st.sidebar.divider()
 # Chart content
 
 ## Manipulate data
-file_path = './data/Dataset-Customer Profitability.xlsx'
-data = pd.read_excel(file_path, sheet_name=None)
-
-@st.cache_resource
-def get_data(top_num, metrics):
+@st.cache_data
+def get_data(file_path):
+    data = pd.read_excel(file_path, sheet_name=None)
     customers = data['customer'].merge(
         data['industry'], left_on='Industry ID', right_on='ID', how='left').merge(
         data['state'], left_on='State', right_on='StateCode', how='left')
@@ -55,6 +53,12 @@ def get_data(top_num, metrics):
                                           'Qtr', 'Month']]
     data_selected['Product'] = data_selected['Product'].fillna('<?>')
     data_selected['Industry'] = data_selected['Industry'].fillna('<?>')
+
+    return data_selected
+    
+@st.cache_resource
+def load_data(top_num, metrics):
+    data_selected = get_data('./data/Dataset-Customer Profitability.xlsx')
     if metrics == '# of Customers':
         table_data = data_selected.groupby(
             'Product', dropna=False).nunique().sort_values(
@@ -75,18 +79,22 @@ def get_data(top_num, metrics):
             bkm.ColumnDataSource(bar_data),
             bkm.ColumnDataSource(state_data))
 
-source, source_table, source_line, source_bar, source_map = get_data(
+source, source_table, source_line, source_bar, source_map = load_data(
     top_num, metrics)
 
 # Table
-columns = [
-        bkm.TableColumn(field="Product", title="Product",),
-        bkm.TableColumn(field="Customer Key", title="Value")]
-data_table = bkm.DataTable(
-    source=source_table, 
-    view=bkm.CDSView(filter=bkm.IndexFilter(list(range(5)))),
-    columns=columns, width=300, height=150,
-    index_position=None)
+@st.cache_resource
+def plot_table(_src, top_num):
+	columns = [
+	        bkm.TableColumn(field="Product", title="Product",),
+	        bkm.TableColumn(field="Customer Key", title="Value")]
+	data_table = bkm.DataTable(
+	    source=_src, 
+	    view=bkm.CDSView(filter=bkm.IndexFilter(list(range(top_num)))),
+	    columns=columns, width=300, height=150,
+	    index_position=None)
+	return data_table
+	
+data_table = plot_table(source_table, top_num)
 
 st.bokeh_chart(data_table)
-    
