@@ -9,7 +9,7 @@ file_path = './data/central_trend_2017_base.xlsx'
 genders = ['Males', 'Females']
 
 # Widgets
-st.set_page_config(layout='centered', page_title='2023 Week 19')
+st.set_page_config(layout='centered', page_title='#WOW2023 Week 19')
 
 primary_year = st.sidebar.selectbox('Primary Year', 
                             options=[str(year) for year in range(2011, 2051)],
