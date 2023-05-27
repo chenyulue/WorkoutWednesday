@@ -148,4 +148,4 @@ fig.add_annotation(
     opacity=0.8,
 )
 
-col1.plotly_chart(fig)
+col1.plotly_chart(fig, use_container_width=True)
