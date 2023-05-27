@@ -31,7 +31,6 @@ with col2:
         "Percent Around Target",
         min_value=0.0,
         max_value=1.0,
-        value=0.05,
         step=0.01,
         label_visibility="collapsed",
         key="tval",
